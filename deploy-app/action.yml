@@ -1,0 +1,56 @@
+name: 'Deploy Expo App'
+description: 'Deploy Expo application using EAS Submit or Expo publish'
+author: 'Expo'
+
+inputs:
+  platform:
+    description: 'Platform to deploy to (ios, android, web)'
+    required: false
+    default: 'web'
+  channel:
+    description: 'Release channel for publish'
+    required: false
+    default: 'default'
+  submit:
+    description: 'Submit to app stores using EAS Submit'
+    required: false
+    default: 'false'
+  working-directory:
+    description: 'Working directory for deployment'
+    required: false
+    default: '.'
+
+outputs:
+  publish-url:
+    description: 'URL of the published app'
+  submission-id:
+    description: 'EAS Submit submission ID'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Publish to Expo
+      if: inputs.platform == 'web' || inputs.submit != 'true'
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ "${{ inputs.platform }}" == "web" ]; then
+          expo export:web
+        else
+          expo publish --release-channel ${{ inputs.channel }}
+        fi
+      shell: bash
+      
+    - name: Submit to App Stores
+      if: inputs.submit == 'true'
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ "${{ inputs.platform }}" == "ios" ]; then
+          eas submit --platform ios --non-interactive
+        elif [ "${{ inputs.platform }}" == "android" ]; then
+          eas submit --platform android --non-interactive
+        fi
+      shell: bash
+
+branding:
+  icon: 'upload-cloud'
+  color: 'red'

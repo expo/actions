@@ -1,0 +1,57 @@
+name: 'Build Expo App'
+description: 'Build Expo application using EAS Build or local builds'
+author: 'Expo'
+
+inputs:
+  platform:
+    description: 'Platform to build for (ios, android, all)'
+    required: false
+    default: 'all'
+  profile:
+    description: 'Build profile to use'
+    required: false
+    default: 'development'
+  local:
+    description: 'Build locally instead of using EAS Build'
+    required: false
+    default: 'false'
+  working-directory:
+    description: 'Working directory for the build'
+    required: false
+    default: '.'
+
+outputs:
+  build-id:
+    description: 'EAS Build ID (if using EAS Build)'
+  artifact-url:
+    description: 'URL to download the built artifact'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Build with EAS
+      if: inputs.local != 'true'
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ "${{ inputs.platform }}" == "all" ]; then
+          eas build --platform all --profile ${{ inputs.profile }} --non-interactive
+        else
+          eas build --platform ${{ inputs.platform }} --profile ${{ inputs.profile }} --non-interactive
+        fi
+      shell: bash
+      
+    - name: Build locally
+      if: inputs.local == 'true'
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ "${{ inputs.platform }}" == "android" ] || [ "${{ inputs.platform }}" == "all" ]; then
+          expo build:android --type apk
+        fi
+        if [ "${{ inputs.platform }}" == "ios" ] || [ "${{ inputs.platform }}" == "all" ]; then
+          expo build:ios --type archive
+        fi
+      shell: bash
+
+branding:
+  icon: 'box'
+  color: 'green'

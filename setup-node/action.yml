@@ -1,0 +1,31 @@
+name: 'Setup Node.js'
+description: 'Setup Node.js with caching for Expo projects'
+author: 'Expo'
+
+inputs:
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: '18'
+  cache:
+    description: 'Enable package manager cache'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: ${{ inputs.cache == 'true' && 'npm' || '' }}
+        
+    - name: Install dependencies
+      if: hashFiles('package.json') != ''
+      run: npm ci
+      shell: bash
+
+branding:
+  icon: 'package'
+  color: 'blue'

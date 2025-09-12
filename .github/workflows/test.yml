@@ -1,0 +1,41 @@
+name: Test Actions
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-setup-node:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Test setup-node action
+        uses: ./setup-node
+        with:
+          node-version: '18'
+          
+      - name: Verify Node.js installation
+        run: |
+          node --version
+          npm --version
+
+  test-setup-expo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: ./setup-node
+        with:
+          node-version: '18'
+      
+      - name: Test setup-expo action
+        uses: ./setup-expo
+        
+      - name: Verify Expo CLI installation
+        run: expo --version

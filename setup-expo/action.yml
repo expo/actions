@@ -1,0 +1,42 @@
+name: 'Setup Expo CLI'
+description: 'Setup Expo CLI and authentication for Expo projects'
+author: 'Expo'
+
+inputs:
+  expo-version:
+    description: 'Expo CLI version to install'
+    required: false
+    default: 'latest'
+  expo-token:
+    description: 'Expo authentication token'
+    required: false
+  eas-version:
+    description: 'EAS CLI version to install'
+    required: false
+    default: 'latest'
+  expo-cache:
+    description: 'Cache Expo CLI installation'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Expo CLI
+      run: |
+        if [ "${{ inputs.expo-cache }}" == "true" ]; then
+          echo "Setting up caching for Expo CLI..."
+        fi
+        npm install -g @expo/cli@${{ inputs.expo-version }}
+        npm install -g eas-cli@${{ inputs.eas-version }}
+      shell: bash
+      
+    - name: Authenticate with Expo
+      if: inputs.expo-token != ''
+      run: |
+        echo "EXPO_TOKEN=${{ inputs.expo-token }}" >> $GITHUB_ENV
+      shell: bash
+
+branding:
+  icon: 'smartphone'
+  color: 'purple'

@@ -1,0 +1,54 @@
+name: 'Test Expo App'
+description: 'Run tests for Expo applications with proper setup'
+author: 'Expo'
+
+inputs:
+  test-command:
+    description: 'Test command to run'
+    required: false
+    default: 'npm test'
+  working-directory:
+    description: 'Working directory for tests'
+    required: false
+    default: '.'
+  coverage:
+    description: 'Generate test coverage report'
+    required: false
+    default: 'false'
+  coverage-reporter:
+    description: 'Coverage reporter to use'
+    required: false
+    default: 'lcov'
+
+outputs:
+  coverage-report:
+    description: 'Path to coverage report'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run tests
+      working-directory: ${{ inputs.working-directory }}
+      run: ${{ inputs.test-command }}
+      shell: bash
+      
+    - name: Generate coverage report
+      if: inputs.coverage == 'true'
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ "${{ inputs.coverage-reporter }}" == "lcov" ]; then
+          npm test -- --coverage --coverageReporters=lcov
+        else
+          npm test -- --coverage --coverageReporters=${{ inputs.coverage-reporter }}
+        fi
+      shell: bash
+      
+    - name: Upload coverage to Codecov
+      if: inputs.coverage == 'true'
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ${{ inputs.working-directory }}
+
+branding:
+  icon: 'check-circle'
+  color: 'orange'
