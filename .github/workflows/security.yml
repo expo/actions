@@ -1,0 +1,59 @@
+name: Security
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 * * 1'  # Run weekly on Mondays at 2 AM
+
+jobs:
+  dependency-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: ./setup-node
+        with:
+          node-version: '18'
+          
+      - name: Run npm audit
+        run: |
+          if [ -f "package.json" ]; then
+            npm audit --audit-level moderate
+          else
+            echo "No package.json found, skipping npm audit"
+          fi
+        continue-on-error: true
+        
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        with:
+          args: --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+          
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+        
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2

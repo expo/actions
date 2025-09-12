@@ -1,0 +1,51 @@
+name: 'Publish Update'
+description: 'Publish OTA updates for Expo applications using EAS Update'
+author: 'Expo'
+
+inputs:
+  channel:
+    description: 'Update channel to publish to'
+    required: false
+    default: 'preview'
+  message:
+    description: 'Update message'
+    required: false
+    default: 'Update from GitHub Actions'
+  platform:
+    description: 'Platform to publish for (ios, android, all)'
+    required: false
+    default: 'all'
+  working-directory:
+    description: 'Working directory'
+    required: false
+    default: '.'
+
+outputs:
+  update-id:
+    description: 'Published update ID'
+  update-url:
+    description: 'URL to the published update'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Publish update
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ "${{ inputs.platform }}" == "all" ]; then
+          eas update --channel ${{ inputs.channel }} --message "${{ inputs.message }}" --non-interactive
+        else
+          eas update --channel ${{ inputs.channel }} --message "${{ inputs.message }}" --platform ${{ inputs.platform }} --non-interactive
+        fi
+      shell: bash
+      
+    - name: Get update info
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Update published successfully to channel: ${{ inputs.channel }}"
+        eas update:list --limit 1
+      shell: bash
+
+branding:
+  icon: 'refresh-cw'
+  color: 'green'

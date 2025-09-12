@@ -1,0 +1,45 @@
+name: 'Setup EAS'
+description: 'Setup EAS CLI with credentials and configuration for Expo projects'
+author: 'Expo'
+
+inputs:
+  eas-version:
+    description: 'EAS CLI version to install'
+    required: false
+    default: 'latest'
+  expo-token:
+    description: 'Expo authentication token'
+    required: false
+  project-id:
+    description: 'Expo project ID'
+    required: false
+  working-directory:
+    description: 'Working directory'
+    required: false
+    default: '.'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup EAS CLI
+      run: npm install -g eas-cli@${{ inputs.eas-version }}
+      shell: bash
+      
+    - name: Authenticate with Expo
+      if: inputs.expo-token != ''
+      run: |
+        echo "EXPO_TOKEN=${{ inputs.expo-token }}" >> $GITHUB_ENV
+      shell: bash
+      
+    - name: Verify EAS installation
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        eas --version
+        if [ "${{ inputs.expo-token }}" != "" ]; then
+          eas whoami
+        fi
+      shell: bash
+
+branding:
+  icon: 'cloud'
+  color: 'blue'

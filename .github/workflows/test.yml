@@ -39,3 +39,15 @@ jobs:
         
       - name: Verify Expo CLI installation
         run: expo --version
+
+  test-setup-eas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Test setup-eas action
+        uses: ./setup-eas
+        
+      - name: Verify EAS CLI installation
+        run: eas --version

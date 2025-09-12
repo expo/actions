@@ -28,6 +28,19 @@ Setup Expo CLI and EAS CLI with authentication.
     expo-cache: 'true'        # optional, default: 'true'
 ```
 
+### setup-eas
+
+Setup EAS CLI with credentials and configuration.
+
+```yaml
+- uses: expo/actions/setup-eas@main
+  with:
+    eas-version: 'latest'     # optional, default: 'latest'
+    expo-token: ${{ secrets.EXPO_TOKEN }}  # optional
+    project-id: 'your-project-id'  # optional
+    working-directory: '.'    # optional, default: '.'
+```
+
 ### build-app
 
 Build Expo applications using EAS Build or local builds.
@@ -65,6 +78,19 @@ Deploy Expo applications using EAS Submit or Expo publish.
     channel: 'default'         # optional, default: 'default'
     submit: 'false'           # optional, default: 'false'
     working-directory: '.'     # optional, default: '.'
+```
+
+### publish-update
+
+Publish OTA updates using EAS Update.
+
+```yaml
+- uses: expo/actions/publish-update@main
+  with:
+    channel: 'preview'        # optional, default: 'preview'
+    message: 'Update message' # optional, default: 'Update from GitHub Actions'
+    platform: 'all'          # optional, default: 'all' (ios, android, all)
+    working-directory: '.'    # optional, default: '.'
 ```
 
 ## Example Workflow

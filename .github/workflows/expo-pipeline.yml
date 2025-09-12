@@ -1,0 +1,109 @@
+name: Complete Expo Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: ./setup-node
+        with:
+          node-version: '18'
+          
+      - name: Setup Expo
+        uses: ./setup-expo
+        with:
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          
+      - name: Run tests
+        uses: ./test-app
+        with:
+          coverage: 'true'
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    outputs:
+      build-id: ${{ steps.build.outputs.build-id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: ./setup-node
+        with:
+          node-version: '18'
+          
+      - name: Setup EAS
+        uses: ./setup-eas
+        with:
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          
+      - name: Build app
+        id: build
+        uses: ./build-app
+        with:
+          platform: 'all'
+          profile: ${{ github.event.inputs.environment }}
+
+  update:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event.inputs.environment == 'staging'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: ./setup-node
+        with:
+          node-version: '18'
+          
+      - name: Setup EAS
+        uses: ./setup-eas
+        with:
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          
+      - name: Publish update
+        uses: ./publish-update
+        with:
+          channel: ${{ github.event.inputs.environment }}
+          message: 'Deploy to ${{ github.event.inputs.environment }} from ${{ github.sha }}'
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event.inputs.environment == 'production'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: ./setup-node
+        with:
+          node-version: '18'
+          
+      - name: Setup EAS
+        uses: ./setup-eas
+        with:
+          expo-token: ${{ secrets.EXPO_TOKEN }}
+          
+      - name: Submit to app stores
+        uses: ./deploy-app
+        with:
+          platform: 'all'
+          submit: 'true'
