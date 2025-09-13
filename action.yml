@@ -1,0 +1,10 @@
+name: Expo Actions
+author: Expo
+description: A collection of tools to use Expo in GitHub Actions, see [all available actions](https://github.com/expo/actions#readme)
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        echo 'This root Expo action doesn't do anything, see [all available actions](https://github.com/expo/actions#readme)'
+        exit 1
