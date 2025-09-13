@@ -6,5 +6,5 @@ runs:
   steps:
     - shell: bash
       run: |
-        echo 'This root Expo Action doesn't do anything, see [all available actions](https://github.com/expo/actions#readme)'
+        echo 'This root Expo action doesn't do anything, see [all available actions](https://github.com/expo/actions#readme)'
         exit 1
