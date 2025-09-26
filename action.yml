@@ -1,0 +1,13 @@
+name: Expo Github Actions
+author: Expo
+description: A collection of GitHub Actions for Expo projects
+branding:
+  icon: terminal
+  color: gray-dark
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        echo 'This root actions doesn't do anything, see [all available actions](https://github.com/expo/actions#readme)'
+        exit 1
