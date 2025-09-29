@@ -1,0 +1,45 @@
+{
+  "private": true,
+  "name": "@expo/actions",
+  "version": "0.0.0",
+  "description": "A collection of GitHub Actions for Expo projects",
+  "author": "Expo",
+  "license": "MIT",
+  "homepage": "https://github.com/expo/actions#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/expo/actions.git"
+  },
+  "scripts": {
+    "clean": "git rm -r ./build",
+    "build": "bun ./src/scripts/build.ts",
+    "lint": "eslint",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@actions/cache": "^4.1.0",
+    "@actions/core": "^1.11.1",
+    "@actions/exec": "^1.1.1",
+    "@actions/github": "^6.0.1",
+    "@actions/io": "^1.1.3",
+    "@actions/tool-cache": "^2.0.2",
+    "@expo/package-manager": "^1.9.8"
+  },
+  "devDependencies": {
+    "@expo/fingerprint": "^0.15.1",
+    "@tsconfig/recommended": "^1.0.10",
+    "@types/bun": "^1.2.22",
+    "eslint": "^9.36.0",
+    "eslint-config-universe": "^15.0.3",
+    "sqlite3": "^5.1.7"
+  },
+  "trustedDependencies": [
+    "sqlite3"
+  ],
+  "prettier": {
+    "printWidth": 100,
+    "tabWidth": 2,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  }
+}
