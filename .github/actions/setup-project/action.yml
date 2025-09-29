@@ -1,4 +1,4 @@
-name: Setup Project
+name: Set up project
 description: Prepare the project in GitHub Actions
 
 inputs:

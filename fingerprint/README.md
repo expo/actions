@@ -1,6 +1,6 @@
 <div align="center">
   <h1>expo/actions/fingerprint</h1>
-  <p>Checking project fingerprinting for pull requests using <a href="https://www.npmjs.com/package/@expo/fingerprint"><code>@expo/fingerprint</code></a></p>
+  <p>Check project fingerprinting for pull requests using <a href="https://www.npmjs.com/package/@expo/fingerprint"><code>@expo/fingerprint</code></a></p>
 </div>
 
 <p align="center">
@@ -37,9 +37,9 @@
 
 ## Overview
 
-`fingerprint` is a GitHub Action that checks project fingerprinting for pull requests using [`@expo/fingerprint`](https://www.npmjs.com/package/@expo/fingerprint). When a pull request is updated, you can use this action to check the fingerprint integrity. If a pull request is fingerprint compatible, it means there are no changes from native code and be Over-The-Air updates compatible. Otherwise, if fingerprint changed, it means the project has native code changes.
+`fingerprint` is a GitHub Action that computes and compares project fingerprinting for pull requests, using [`@expo/fingerprint`](https://www.npmjs.com/package/@expo/fingerprint). When a pull request is updated, if it is fingerprint compatible then this means there are no changes from native code and be Over-The-Air updates compatible. Otherwise, if the fingerprint changed, it means the project has native code changes and a new native build may be required.
 
-This action is designed to be used in conjunction with the `@expo/fingerprint` package, which generates a unique fingerprint for each pull request based on the contents of the code. By using fingerprinting, this action can determine if a pull request has already been built, and reuse the existing build instead of creating a new one.
+By using fingerprinting, this action can determine if a pull request has already been built, and reuse the existing build instead of creating a new one.
 
 ## Usage
 
