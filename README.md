@@ -11,6 +11,14 @@
 
 A GitHub Action that checks project fingerprinting for pull requests using [`@expo/fingerprint`](https://www.npmjs.com/package/@expo/fingerprint).
 
+### [`expo/actions/repack-app`](./repack-app#readme)
+
+A GitHub Action that repackages apps from fingerprint-compatible builds with new JavaScript bundles and app metadata without rebuilding the entire native project.
+
+### [`expo/actions/repack-app-artifact`](./repack-app-artifact#readme)
+
+A composite GitHub Action that simplifies the fingerprint-based repackaging workflow by combining artifact querying, downloading, repacking, building, uploading, and database updates into a single step.
+
 ## Contributing
 
 All GitHub Actions in this repository are open-source and contributions are welcome.

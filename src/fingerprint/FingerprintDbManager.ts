@@ -1,28 +1,38 @@
 import type { FingerprintSource, Fingerprint as FingerprintType } from '@expo/fingerprint';
 
-import { Database, openDatabaseAsync } from '../sqlite';
+import { Camelize, Database, openDatabaseAsync } from '../sqlite';
+import { DbMigrationCoordinator } from './DbMigration';
+import { GitHubArtifactsDbManager } from './GitHubArtifactsDbManager';
+import { type IDbManager } from './IDbManager';
 
 export type FingerprintDbEntity = Omit<Camelize<RawFingerprintDbEntity>, 'fingerprint'> & {
   fingerprint: FingerprintType;
 };
 
-export class FingerprintDbManager {
+export class FingerprintDbManager implements IDbManager {
   constructor(private readonly dbPath: string) {}
 
-  public async initAsync(): Promise<Database> {
-    const db = await openDatabaseAsync(this.dbPath);
+  public async runInitialTableCreation(db: Database): Promise<void> {
     await db.runAsync(
-      `CREATE TABLE IF NOT EXISTS ${
-        FingerprintDbManager.TABLE_NAME
-      } (${FingerprintDbManager.SCHEMA.join(', ')})`
+      `CREATE TABLE ${FingerprintDbManager.TABLE_NAME} (${FingerprintDbManager.SCHEMA.join(', ')})`
     );
+
     for (const index of FingerprintDbManager.INDEXES) {
       await db.runAsync(index);
     }
     for (const extraStatement of FingerprintDbManager.EXTRA_CREATE_DB_STATEMENTS) {
       await db.runAsync(extraStatement);
     }
-    await db.runAsync(`PRAGMA fingerprint_schema_version = ${FingerprintDbManager.SCHEMA_VERSION}`);
+  }
+
+  public async initAsync(): Promise<Database> {
+    const db = await openDatabaseAsync(this.dbPath);
+
+    const coordinator = new DbMigrationCoordinator();
+    coordinator.registerManager('fingerprint', this);
+    coordinator.registerManager('github-artifacts', new GitHubArtifactsDbManager(db));
+
+    await coordinator.initializeDatabase(db);
     this.db = db;
     return db;
   }
@@ -32,23 +42,28 @@ export class FingerprintDbManager {
     params: {
       easBuildId?: string;
       fingerprint: FingerprintType;
+      platform?: string;
     }
   ): Promise<void> {
     if (!this.db) {
       throw new Error('Database not initialized. Call initAsync() first.');
     }
     const easBuildId = params.easBuildId ?? '';
+    const platform = params.platform ?? null;
     const fingerprintString = JSON.stringify(params.fingerprint);
+
     await this.db.runAsync(
-      `INSERT INTO ${FingerprintDbManager.TABLE_NAME} (git_commit_hash, eas_build_id, fingerprint_hash, fingerprint) VALUES (?, ?, ?, json(?)) \
-       ON CONFLICT(git_commit_hash) DO UPDATE SET eas_build_id = ?, fingerprint_hash = ?, fingerprint = json(?)`,
+      `INSERT INTO ${FingerprintDbManager.TABLE_NAME} (git_commit_hash, eas_build_id, fingerprint_hash, fingerprint, platform) VALUES (?, ?, ?, json(?), ?) \
+       ON CONFLICT(git_commit_hash) DO UPDATE SET eas_build_id = ?, fingerprint_hash = ?, fingerprint = json(?), platform = ?`,
       gitCommitHash,
       easBuildId,
       params.fingerprint.hash,
       fingerprintString,
+      platform,
       easBuildId,
       params.fingerprint.hash,
-      fingerprintString
+      fingerprintString,
+      platform
     );
   }
 
@@ -137,13 +152,66 @@ export class FingerprintDbManager {
     return JSON.parse(result);
   }
 
+  public async getFirstGitHubArtifactAsync(
+    fingerprintHash: string,
+    platform: string
+  ): Promise<{
+    id: number;
+    artifactId: string;
+    artifactUrl: string;
+    artifactDigest: string;
+    workflowRunId: string;
+    platform: string;
+  } | null> {
+    if (!this.db) {
+      throw new Error('Database not initialized. Call initAsync() first.');
+    }
+
+    const row = await this.db.getAsync<{
+      id: number;
+      artifact_id: string;
+      artifact_url: string;
+      artifact_digest: string;
+      workflow_run_id: string;
+      platform: string;
+    }>(
+      `SELECT ga.id, ga.artifact_id, ga.artifact_url, ga.artifact_digest, ga.workflow_run_id, ga.platform
+       FROM ${FingerprintDbManager.TABLE_NAME} f
+       JOIN github_artifacts ga ON f.id = ga.fingerprint_id
+       WHERE f.fingerprint_hash = ? AND (ga.platform = ? AND (f.platform = ? OR f.platform IS NULL))
+       ORDER BY f.id ASC, ga.id ASC
+       LIMIT 1`,
+      fingerprintHash,
+      platform,
+      platform
+    );
+
+    if (!row) {
+      return null;
+    }
+
+    return {
+      id: row.id,
+      artifactId: row.artifact_id,
+      artifactUrl: row.artifact_url,
+      artifactDigest: row.artifact_digest,
+      workflowRunId: row.workflow_run_id,
+      platform: row.platform,
+    };
+  }
+
+  public getArtifactsManager(): GitHubArtifactsDbManager {
+    if (!this.db) {
+      throw new Error('Database not initialized. Call initAsync() first.');
+    }
+    return new GitHubArtifactsDbManager(this.db);
+  }
+
   public async closeAsync(): Promise<void> {
     this.db?.closeAsync();
   }
 
   //#region private
-
-  private static readonly SCHEMA_VERSION = 0;
 
   private static readonly TABLE_NAME = 'fingerprint';
 
@@ -153,6 +221,7 @@ export class FingerprintDbManager {
     'git_commit_hash TEXT NOT NULL',
     'fingerprint_hash TEXT NOT NULL',
     'fingerprint TEXT NOT NULL',
+    'platform TEXT',
     "created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'utc'))",
     "updated_at TEXT NOT NULL DEFAULT (DATETIME('now', 'utc'))",
   ];
@@ -177,6 +246,7 @@ END`,
       gitCommitHash: rawEntity.git_commit_hash,
       fingerprintHash: rawEntity.fingerprint_hash,
       fingerprint: JSON.parse(rawEntity.fingerprint),
+      platform: rawEntity.platform,
       createdAt: rawEntity.created_at,
       updatedAt: rawEntity.updated_at,
     };
@@ -191,19 +261,7 @@ interface RawFingerprintDbEntity {
   git_commit_hash: string;
   fingerprint_hash: string;
   fingerprint: string;
+  platform: string | null;
   created_at: string;
   updated_at: string;
 }
-
-//#region TypeScript utilities
-// https://stackoverflow.com/a/63715429
-type CamelizeString<T extends PropertyKey, C extends string = ''> = T extends string
-  ? string extends T
-    ? string
-    : T extends `${infer F}_${infer R}`
-      ? CamelizeString<Capitalize<R>, `${C}${F}`>
-      : `${C}${T}`
-  : T;
-
-type Camelize<T> = { [K in keyof T as CamelizeString<K>]: T[K] };
-//#endregion

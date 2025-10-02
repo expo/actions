@@ -1,0 +1,33 @@
+---
+name: Expo GitHub Action - Repack app
+author: Expo
+description: Repackage app using @expo/repack-app
+branding:
+  icon: smartphone
+  color: gray-dark
+runs:
+  using: node20
+  main: ../build/repack-app.js
+inputs:
+  platform:
+    description: The platform for which to create a new build. Possible values are 'android' | 'ios'
+    required: true
+  source-app:
+    description: Path to the source app file to repack
+    required: true
+  output-directory:
+    description: Directory path where the repacked app will be saved
+    required: false
+    default: ${{ runner.temp }}
+  working-directory:
+    description: The relative directory of your Expo app
+    required: false
+    default: ${{ github.workspace }}
+  repack-version:
+    description: "@expo/repack-app version to install"
+    required: false
+    default: latest
+
+outputs:
+  output-path:
+    description: The full path to the repacked app file
