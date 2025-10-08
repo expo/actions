@@ -60,6 +60,7 @@ describe(collectFingerprintActionInput, () => {
         "currentGitCommitHash": "test-sha",
         "fingerprintDbCacheKey": "",
         "fingerprintInstallationCache": true,
+        "fingerprintStateOutputFile": "",
         "fingerprintVersion": "latest",
         "githubToken": "******",
         "packager": "yarn",
