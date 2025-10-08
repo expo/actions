@@ -9,11 +9,8 @@ runs:
   using: node20
   main: ../build/fingerprint-update-artifact.js
 inputs:
-  current-git-commit:
-    description: The Git hash for the current commit
-    required: true
-  current-fingerprint:
-    description: The fingerprint of the current commit
+  fingerprint-state-file:
+    description: The fingerprint state file generated from `expo/actions/fingerprint`
     required: true
   platform:
     description: The platform for the artifact (android | ios)

@@ -10,10 +10,10 @@ runs:
   steps:
     - name: Query artifact from fingerprint database
       id: query-artifact
-      if: ${{ inputs.fingerprint-diff == '[]' }}
       uses: expo/actions/fingerprint-query-artifact@main
+      working-directory: ${{ inputs.working-directory }}
       with:
-        fingerprint-hash: ${{ fromJSON(inputs.current-fingerprint).hash }}
+        fingerprint-state-file: ${{ inputs.fingerprint-state-file }}
         platform: ${{ inputs.platform }}
         packager: ${{ inputs.packager }}
         fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
@@ -22,6 +22,7 @@ runs:
       id: download-artifact
       if: steps.query-artifact.outputs.run-id != ''
       uses: actions/download-artifact@v4
+      working-directory: ${{ inputs.working-directory }}
       with:
         name: ${{ inputs.artifact-name }}
         path: ${{ inputs.output-directory }}/previous-build
@@ -32,16 +33,16 @@ runs:
       id: repack
       if: steps.download-artifact.outputs.download-path != ''
       uses: expo/actions/repack-app@main
+      working-directory: ${{ inputs.working-directory }}
       with:
         platform: ${{ inputs.platform }}
         source-app: ${{ steps.download-artifact.outputs.download-path }}
         output-directory: ${{ inputs.output-directory }}/repacked-build
-        working-directory: ${{ inputs.working-directory }}
         repack-version: ${{ inputs.repack-version }}
 
     - name: Build
       id: build
-      if: ${{ inputs.fingerprint-diff != '[]' || steps.query-artifact.outputs.run-id == '' }}
+      if: ${{ steps.query-artifact.outputs.run-id == '' }}
       shell: ${{ inputs.build-command-shell }}
       working-directory: ${{ inputs.working-directory }}
       run: ${{ inputs.build-command }}
@@ -49,6 +50,7 @@ runs:
     - name: Upload artifact
       id: upload-artifact
       uses: actions/upload-artifact@v4
+      working-directory: ${{ inputs.working-directory }}
       with:
         name: ${{ inputs.artifact-name }}
         path: ${{ steps.repack.outputs.output-path || inputs.build-output }}
@@ -59,9 +61,9 @@ runs:
       id: update-fingerprint
       if: steps.upload-artifact.outputs.artifact-id != ''
       uses: expo/actions/fingerprint-update-artifact@main
+      working-directory: ${{ inputs.working-directory }}
       with:
-        current-git-commit: ${{ inputs.current-git-commit }}
-        current-fingerprint: ${{ inputs.current-fingerprint }}
+        fingerprint-state-file: ${{ inputs.fingerprint-state-file }}
         platform: ${{ inputs.platform }}
         artifact-id: ${{ steps.upload-artifact.outputs.artifact-id }}
         artifact-url: ${{ steps.upload-artifact.outputs.artifact-url }}
@@ -73,14 +75,8 @@ inputs:
   platform:
     description: The platform for the artifact (android | ios)
     required: true
-  fingerprint-diff:
-    description: The diff between the current and the previous fingerprint
-    required: true
-  current-git-commit:
-    description: The Git hash for the current commit
-    required: true
-  current-fingerprint:
-    description: The fingerprint of the current commit
+  fingerprint-state-file:
+    description: The fingerprint state file generated from `expo/actions/fingerprint`
     required: true
   build-command:
     description: Custom shell command to run when no cached artifact is found
@@ -155,4 +151,4 @@ outputs:
     value: ${{ steps.download-artifact.outputs.download-path != '' }}
   build-executed:
     description: Whether build-command was executed (true if no artifact found)
-    value: ${{ inputs.fingerprint-diff != '[]' || steps.query-artifact.outputs.run-id == '' }}
+    value: ${{ steps.query-artifact.outputs.run-id == '' }}

@@ -12,7 +12,6 @@ async function runAction() {
   const platform = getInput('platform', { required: true });
   const sourceApp = getInput('source-app', { required: true });
   const outputDirectory = getInput('output-directory');
-  const workingDirectory = getInput('working-directory') || process.cwd();
   const repackVersion = getInput('repack-version') || 'latest';
 
   let outputDirectoryStat: fs.Stats | null;
@@ -43,7 +42,6 @@ async function runAction() {
     repackArgs.push('--verbose');
   }
   await spawnAsync('npx', repackArgs, {
-    cwd: workingDirectory,
     stdio: 'inherit',
   });
   info(`Repacked app created at ${outputFile}`);

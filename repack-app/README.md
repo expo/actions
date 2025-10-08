@@ -124,13 +124,14 @@ jobs:
       - name: Check fingerprint
         id: fingerprint
         uses: expo/actions/fingerprint@main
+        with:
+          fingerprint-state-output-file: ${{ runner.temp }}/fingerprint-state.json
 
       - name: Query artifact from fingerprint database (Android)
         id: android-query-artifact
-        if: ${{ steps.fingerprint.outputs.fingerprint-diff == '[]' }}
         uses: expo/actions/fingerprint-query-artifact@main
         with:
-          fingerprint-hash: ${{ fromJSON(steps.fingerprint.outputs.current-fingerprint).hash }}
+          fingerprint-state-file: ${{ runner.temp }}/fingerprint-state.json
           platform: android
 
       - name: Download artifact (Android)
@@ -153,7 +154,7 @@ jobs:
 
       - name: Build (Android)
         id: android-build
-        if: ${{ steps.fingerprint.outputs.fingerprint-diff != '[]' || steps.android-query-artifact.outputs.run-id == '' }}
+        if: ${{ steps.android-query-artifact.outputs.run-id == '' }}
         run: |
           npx expo prebuild -p android
           cd android
@@ -170,8 +171,7 @@ jobs:
         id: android-update-fingerprint
         uses: expo/actions/fingerprint-update-artifact@main
         with:
-          current-git-commit: ${{ steps.fingerprint.outputs.current-git-commit }}
-          current-fingerprint: ${{ steps.fingerprint.outputs.current-fingerprint }}
+          fingerprint-state-file: ${{ runner.temp }}/fingerprint-state.json
           platform: android
           artifact-id: ${{ steps.android-upload-artifact.outputs.artifact-id }}
           artifact-url: ${{ steps.android-upload-artifact.outputs.artifact-url }}
