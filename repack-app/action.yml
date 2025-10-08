@@ -19,6 +19,10 @@ inputs:
     description: Directory path where the repacked app will be saved
     required: false
     default: ${{ runner.temp }}
+  working-directory:
+    description: The relative directory of your Expo app
+    required: false
+    default: ${{ github.workspace }}
   repack-version:
     description: "@expo/repack-app version to install"
     required: false
