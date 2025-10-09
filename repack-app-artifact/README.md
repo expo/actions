@@ -49,13 +49,17 @@ This action automatically handles:
 To use this action, add the following code to your workflow:
 
 ```yaml
+- name: Check fingerprint
+  id: fingerprint
+  uses: expo/actions/fingerprint@main
+  with:
+    fingerprint-state-output-file: ${{ runner.temp }}/fingerprint-state.json
+
 - name: Repack app with artifact management
   uses: expo/actions/repack-app-artifact@main
   with:
     platform: android
-    fingerprint-diff: ${{ steps.fingerprint.outputs.fingerprint-diff }}
-    current-git-commit: ${{ steps.fingerprint.outputs.current-git-commit }}
-    current-fingerprint: ${{ steps.fingerprint.outputs.current-fingerprint }}
+    fingerprint-state-file: ${{ runner.temp }}/fingerprint-state.json
     build-command: |
       npx expo prebuild -p android
       cd android
@@ -72,9 +76,7 @@ Here is a summary of all the input options you can use.
 | variable                     | required | description                                                                                            |
 | ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
 | **platform**                 | ✅       | The platform to repack (`android` or `ios`)                                                            |
-| **fingerprint-diff**         | ✅       | The fingerprint diff output from the fingerprint action                                                |
-| **current-git-commit**       | ✅       | The current git commit hash from the fingerprint action                                                |
-| **current-fingerprint**      | ✅       | The current fingerprint JSON from the fingerprint action                                               |
+| **fingerprint-state-file**   | ✅       | The fingerprint state file generated from `expo/actions/fingerprint` action                            |
 | **build-command**            | ✅       | The command to run for building the app when fingerprint changes                                       |
 | **build-output**             | ✅       | Path to the built app output (e.g., `android/app/build/outputs/apk/release/app-release.apk`)           |
 | **artifact-name**            | ✅       | Name for the uploaded artifact                                                                         |
@@ -142,14 +144,14 @@ jobs:
       - name: Check fingerprint
         id: fingerprint
         uses: expo/actions/fingerprint@main
+        with:
+          fingerprint-state-output-file: ${{ runner.temp }}/fingerprint-state.json
 
       - name: Repack app with artifact management
         uses: expo/actions/repack-app-artifact@main
         with:
           platform: android
-          fingerprint-diff: ${{ steps.fingerprint.outputs.fingerprint-diff }}
-          current-git-commit: ${{ steps.fingerprint.outputs.current-git-commit }}
-          current-fingerprint: ${{ steps.fingerprint.outputs.current-fingerprint }}
+          fingerprint-state-file: ${{ runner.temp }}/fingerprint-state.json
           build-command: |
             npx expo prebuild -p android
             cd android

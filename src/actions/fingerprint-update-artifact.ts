@@ -4,19 +4,25 @@ import { type Fingerprint as FingerprintType } from '@expo/fingerprint';
 import assert from 'node:assert';
 
 import { executeAction } from '../actions';
-import { FingerprintDbManager, createFingerprintDbManagerAsync } from '../fingerprint';
+import {
+  FingerprintDbManager,
+  createFingerprintDbManagerAsync,
+  loadFingerprintStateAsync,
+} from '../fingerprint';
 
 executeAction(runAction);
 
 async function runAction() {
-  const currentGitCommitHash = getInput('current-git-commit', { required: true });
-  const currentFingerprint = getInput('current-fingerprint', { required: true });
+  const fingerprintStateFile = getInput('fingerprint-state-file', { required: true });
   const platform = getInput('platform', { required: true });
   const artifactId = getInput('artifact-id', { required: true });
   const artifactUrl = getInput('artifact-url', { required: true });
   const artifactDigest = getInput('artifact-digest', { required: true });
   const packager = getInput('packager');
   const fingerprintDbCacheKey = getInput('fingerprint-db-cache-key');
+
+  const { currentFingerprint, currentGitCommitHash } =
+    await loadFingerprintStateAsync(fingerprintStateFile);
 
   const dbManager = await createFingerprintDbManagerAsync(packager, fingerprintDbCacheKey);
 
@@ -40,7 +46,7 @@ async function updateFingerprintDbAsync(params: {
   dbManager: FingerprintDbManager;
   fingerprintDbCacheKey: string;
   gitCommitHash: string;
-  fingerprint: string;
+  fingerprint: FingerprintType;
   platform: string;
   githubArtifact: {
     artifactId: string;
@@ -50,9 +56,8 @@ async function updateFingerprintDbAsync(params: {
     platform: string;
   };
 }) {
-  const fingerprint = JSON.parse(params.fingerprint) as FingerprintType;
   await params.dbManager.upsertFingerprintByGitCommitHashAsync(params.gitCommitHash, {
-    fingerprint,
+    fingerprint: params.fingerprint,
   });
   const fingerprintEntity = await params.dbManager.getEntityFromGitCommitHashAsync(
     params.gitCommitHash

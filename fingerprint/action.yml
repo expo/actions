@@ -42,6 +42,9 @@ inputs:
   saving-db-branch:
     description: The branch for saving the fingerprint database. Defaults to the repository's default branch
     required: false
+  fingerprint-state-output-file:
+    description: The output file to save the fingerprint state
+    required: false
 
 outputs:
   previous-fingerprint:

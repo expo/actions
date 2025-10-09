@@ -9,8 +9,8 @@ runs:
   using: node20
   main: ../build/fingerprint-query-artifact.js
 inputs:
-  fingerprint-hash:
-    description: The fingerprint hash to query
+  fingerprint-state-file:
+    description: The fingerprint state file generated from `expo/actions/fingerprint`
     required: true
   platform:
     description: The platform for the artifact (android | ios)

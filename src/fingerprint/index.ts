@@ -21,6 +21,15 @@ export interface FingerprintOutput {
 }
 
 /**
+ * FingerprintState is all the outputs from `expo/actions/fingerprint` saving to a temporary file.
+ * It is used to pass the fingerprint state to other actions without exceeding the maximum length of the action inputs.
+ */
+export interface FingerprintState extends FingerprintOutput {
+  currentGitCommitHash: string;
+  previousGitCommitHash: string;
+}
+
+/**
  * Shared logic to create a fingerprint diff for fingerprint actions
  */
 export async function createFingerprintOutputAsync(
@@ -100,7 +109,30 @@ export function collectFingerprintActionInput() {
         ? githubContext.payload.pull_request?.head?.sha
         : githubContext.sha),
     savingDbBranch: getInput('saving-db-branch') || undefined,
+    fingerprintStateOutputFile: getInput('fingerprint-state-output-file'),
   };
+}
+
+/**
+ * Save the fingerprint state to a file
+ */
+export function saveFingerprintStateAsync(stateFile: string, fingerprintState: FingerprintState) {
+  return fs.promises.writeFile(stateFile, JSON.stringify(fingerprintState));
+}
+
+/**
+ * Load the fingerprint state from a file
+ */
+export async function loadFingerprintStateAsync(stateFile: string): Promise<FingerprintState> {
+  try {
+    const stat = await fs.promises.stat(stateFile);
+    if (!stat.isFile()) {
+      throw new Error(`${stateFile} is not a file`);
+    }
+  } catch {
+    throw new Error(`${stateFile} does not exist`);
+  }
+  return JSON.parse(await fs.promises.readFile(stateFile, 'utf8'));
 }
 
 /**
