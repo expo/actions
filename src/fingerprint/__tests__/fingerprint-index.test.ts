@@ -59,6 +59,7 @@ describe(collectFingerprintActionInput, () => {
       {
         "currentGitCommitHash": "test-sha",
         "fingerprintDbCacheKey": "",
+        "fingerprintDbCachePath": "",
         "fingerprintInstallationCache": true,
         "fingerprintStateOutputFile": "",
         "fingerprintVersion": "latest",

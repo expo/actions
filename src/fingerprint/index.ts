@@ -1,8 +1,6 @@
 import { getBooleanInput, getInput, group, info } from '@actions/core';
 import { context as githubContext } from '@actions/github';
-import { mkdirP } from '@actions/io';
 import type * as Fingerprint from '@expo/fingerprint';
-import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -67,12 +65,11 @@ export async function createFingerprintOutputAsync(
  */
 export async function createFingerprintDbManagerAsync(
   packager: string,
-  cacheKey: string
+  cacheKey: string,
+  dbPath: string
 ): Promise<FingerprintDbManager> {
   await installSQLiteAsync(packager);
-
-  const dbPath = await getDbPathAsync();
-  const cacheHit = (await restoreDbFromCacheAsync(cacheKey)) != null;
+  const cacheHit = (await restoreDbFromCacheAsync(cacheKey, dbPath)) != null;
   if (cacheHit) {
     info(`Restored fingerprint database from cache - cacheKey[${cacheKey}]`);
   } else {
@@ -98,6 +95,7 @@ export function collectFingerprintActionInput() {
       !getInput('fingerprint-installation-cache') ||
       getBooleanInput('fingerprint-installation-cache'),
     fingerprintDbCacheKey: getInput('fingerprint-db-cache-key'),
+    fingerprintDbCachePath: getInput('fingerprint-db-cache-path'),
     previousGitCommitHash:
       getInput('previous-git-commit') ||
       (githubContext.eventName === 'pull_request'
@@ -165,37 +163,16 @@ export async function installFingerprintAsync(
 
 /**
  * Restore database from the remote cache.
- * This will install the tool back into the local tool cache.
  */
-export async function restoreDbFromCacheAsync(cacheKey: string) {
-  return downloadCache(path.dirname(await getDbPathAsync()), cacheKey);
+export async function restoreDbFromCacheAsync(cacheKey: string, dbPath: string) {
+  return downloadCache(path.dirname(dbPath), cacheKey);
 }
 
 /**
  * Save database to the remote cache.
  * This will fetch from the local tool cache.
  */
-export async function saveDbToCacheAsync(cacheKey: string) {
+export async function saveDbToCacheAsync(cacheKey: string, dbPath: string) {
   info(`Saving fingerprint database to cache: ${cacheKey}`);
-  return uploadCache(path.dirname(await getDbPathAsync()), cacheKey);
-}
-
-/**
- * Get the path to the fingerprint database
- */
-async function getDbPathAsync(): Promise<string> {
-  assert(
-    process.env['RUNNER_TOOL_CACHE'],
-    'Could not resolve the local tool cache, RUNNER_TOOL_CACHE not defined'
-  );
-  const result = path.join(
-    process.env['RUNNER_TOOL_CACHE'],
-    'fingerprint-storage',
-    'fingerprint.db'
-  );
-  const dir = path.dirname(result);
-  if (!(await fs.promises.stat(dir).catch(() => null))) {
-    await mkdirP(dir);
-  }
-  return result;
+  return uploadCache(path.dirname(dbPath), cacheKey);
 }

@@ -13,7 +13,8 @@ executeAction(runAction);
 export async function runAction(input = collectFingerprintActionInput()) {
   const dbManager = await createFingerprintDbManagerAsync(
     input.packager,
-    input.fingerprintDbCacheKey
+    input.fingerprintDbCacheKey,
+    input.fingerprintDbCachePath
   );
   const { currentFingerprint, previousFingerprint, diff } = await createFingerprintOutputAsync(
     dbManager,

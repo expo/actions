@@ -16,6 +16,7 @@ runs:
         platform: ${{ inputs.platform }}
         packager: ${{ inputs.packager }}
         fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
+        fingerprint-db-cache-path: ${{ inputs.fingerprint-db-cache-path }}
 
     - name: Download artifact
       id: download-artifact
@@ -66,6 +67,7 @@ runs:
         artifact-digest: ${{ steps.upload-artifact.outputs.artifact-digest }}
         packager: ${{ inputs.packager }}
         fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
+        fingerprint-db-cache-path: ${{ inputs.fingerprint-db-cache-path }}
 
 inputs:
   platform:
@@ -114,6 +116,10 @@ inputs:
     description: A cache key to use for fingerprint database
     required: false
     default: fingerprint-db
+  fingerprint-db-cache-path:
+    description: The path to the fingerprint database cache
+    required: false
+    default: ${{ runner.tool_cache }}/fingerprint-storage/fingerprint.db
   saving-db-branch:
     description: The branch for saving the fingerprint database
     required: false
