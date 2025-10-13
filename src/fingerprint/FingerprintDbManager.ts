@@ -1,4 +1,6 @@
+import { mkdirP } from '@actions/io';
 import type { FingerprintSource, Fingerprint as FingerprintType } from '@expo/fingerprint';
+import path from 'node:path';
 
 import { Camelize, Database, openDatabaseAsync } from '../sqlite';
 import { DbMigrationCoordinator } from './DbMigration';
@@ -26,6 +28,7 @@ export class FingerprintDbManager implements IDbManager {
   }
 
   public async initAsync(): Promise<Database> {
+    await mkdirP(path.dirname(this.dbPath));
     const db = await openDatabaseAsync(this.dbPath);
 
     const coordinator = new DbMigrationCoordinator();

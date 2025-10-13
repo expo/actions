@@ -73,23 +73,24 @@ To use this action, add the following code to your workflow:
 This action is customizable through variables defined in the [`action.yml`](action.yml).
 Here is a summary of all the input options you can use.
 
-| variable                     | required | description                                                                                            |
-| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
-| **platform**                 | ✅       | The platform to repack (`android` or `ios`)                                                            |
-| **fingerprint-state-file**   | ✅       | The fingerprint state file generated from `expo/actions/fingerprint` action                            |
-| **build-command**            | ✅       | The command to run for building the app when fingerprint changes                                       |
-| **build-output**             | ✅       | Path to the built app output (e.g., `android/app/build/outputs/apk/release/app-release.apk`)           |
-| **artifact-name**            | ✅       | Name for the uploaded artifact                                                                         |
-| **github-token**             | ❌       | GitHub token for downloading artifacts. Default is `github.token`                                      |
-| **working-directory**        | ❌       | The relative directory of your Expo app. Default is `${{ github.workspace }}`                          |
-| **output-directory**         | ❌       | Directory path where the downloaded app or repacked app will be saved. Default is `${{ runner.temp }}` |
-| **repack-version**           | ❌       | `@expo/repack-app` version to install. Default is `latest`                                             |
-| **build-command-shell**      | ❌       | The shell to use for the build command. Default is `bash`                                              |
-| **packager**                 | ❌       | The package manager used to install the fingerprint tools. Default is `yarn`                           |
-| **fingerprint-db-cache-key** | ❌       | A cache key to use for fingerprint database. Default is `fingerprint-db`                               |
-| **saving-db-branch**         | ❌       | The branch for saving the fingerprint database                                                         |
-| **retention-days**           | ❌       | Duration after which artifact will expire in days                                                      |
-| **compression-level**        | ❌       | The level of compression for Zlib (0-9). Default is `6`                                                |
+| variable                      | required | description                                                                                            |
+| ----------------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| **platform**                  | ✅       | The platform to repack (`android` or `ios`)                                                            |
+| **fingerprint-state-file**    | ✅       | The fingerprint state file generated from `expo/actions/fingerprint` action                            |
+| **build-command**             | ✅       | The command to run for building the app when fingerprint changes                                       |
+| **build-output**              | ✅       | Path to the built app output (e.g., `android/app/build/outputs/apk/release/app-release.apk`)           |
+| **artifact-name**             | ✅       | Name for the uploaded artifact                                                                         |
+| **github-token**              | ❌       | GitHub token for downloading artifacts. Default is `github.token`                                      |
+| **working-directory**         | ❌       | The relative directory of your Expo app. Default is `${{ github.workspace }}`                          |
+| **output-directory**          | ❌       | Directory path where the downloaded app or repacked app will be saved. Default is `${{ runner.temp }}` |
+| **repack-version**            | ❌       | `@expo/repack-app` version to install. Default is `latest`                                             |
+| **build-command-shell**       | ❌       | The shell to use for the build command. Default is `bash`                                              |
+| **packager**                  | ❌       | The package manager used to install the fingerprint tools. Default is `yarn`                           |
+| **fingerprint-db-cache-key**  | ❌       | A cache key to use for fingerprint database. Default is `fingerprint-db`                               |
+| **fingerprint-db-cache-path** | ❌       | The path to the fingerprint database cache                                                             |
+| **saving-db-branch**          | ❌       | The branch for saving the fingerprint database                                                         |
+| **retention-days**            | ❌       | Duration after which artifact will expire in days                                                      |
+| **compression-level**         | ❌       | The level of compression for Zlib (0-9). Default is `6`                                                |
 
 ### Available outputs
 

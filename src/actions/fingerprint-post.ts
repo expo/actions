@@ -24,5 +24,8 @@ export async function runAction(input = collectFingerprintActionInput()) {
   } catch (e) {
     info(`Failed to delete the cache: ${e}`);
   }
-  await retryAsync(() => saveDbToCacheAsync(input.fingerprintDbCacheKey), 3);
+  await retryAsync(
+    () => saveDbToCacheAsync(input.fingerprintDbCacheKey, input.fingerprintDbCachePath),
+    3
+  );
 }

@@ -20,11 +20,16 @@ async function runAction() {
   const artifactDigest = getInput('artifact-digest', { required: true });
   const packager = getInput('packager');
   const fingerprintDbCacheKey = getInput('fingerprint-db-cache-key');
+  const fingerprintDbCachePath = getInput('fingerprint-db-cache-path');
 
   const { currentFingerprint, currentGitCommitHash } =
     await loadFingerprintStateAsync(fingerprintStateFile);
 
-  const dbManager = await createFingerprintDbManagerAsync(packager, fingerprintDbCacheKey);
+  const dbManager = await createFingerprintDbManagerAsync(
+    packager,
+    fingerprintDbCacheKey,
+    fingerprintDbCachePath
+  );
 
   await updateFingerprintDbAsync({
     dbManager,

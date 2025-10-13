@@ -10,9 +10,14 @@ async function runAction() {
   const platform = getInput('platform', { required: true });
   const packager = getInput('packager');
   const fingerprintDbCacheKey = getInput('fingerprint-db-cache-key');
+  const fingerprintDbCachePath = getInput('fingerprint-db-cache-path');
 
   const { currentFingerprint, diff } = await loadFingerprintStateAsync(fingerprintStateFile);
-  const dbManager = await createFingerprintDbManagerAsync(packager, fingerprintDbCacheKey);
+  const dbManager = await createFingerprintDbManagerAsync(
+    packager,
+    fingerprintDbCacheKey,
+    fingerprintDbCachePath
+  );
   const githubArtifact = await dbManager.getFirstGitHubArtifactAsync(
     currentFingerprint.hash,
     platform

@@ -31,3 +31,7 @@ inputs:
     description: A cache key to use for saving the fingerprint database
     required: false
     default: fingerprint-db
+  fingerprint-db-cache-path:
+    description: The path to the fingerprint database cache
+    required: false
+    default: ${{ runner.tool_cache }}/fingerprint-storage/fingerprint.db
