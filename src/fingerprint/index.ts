@@ -165,7 +165,7 @@ export async function installFingerprintAsync(
  * Restore database from the remote cache.
  */
 export async function restoreDbFromCacheAsync(cacheKey: string, dbPath: string) {
-  return downloadCache(path.dirname(dbPath), cacheKey);
+  return downloadCache(dbPath, cacheKey);
 }
 
 /**
@@ -174,5 +174,5 @@ export async function restoreDbFromCacheAsync(cacheKey: string, dbPath: string) 
  */
 export async function saveDbToCacheAsync(cacheKey: string, dbPath: string) {
   info(`Saving fingerprint database to cache: ${cacheKey}`);
-  return uploadCache(path.dirname(dbPath), cacheKey);
+  return uploadCache(dbPath, cacheKey);
 }
