@@ -10,7 +10,7 @@ runs:
   steps:
     - name: Query artifact from fingerprint database
       id: query-artifact
-      uses: expo/actions/fingerprint-query-artifact@kudo/fix-repack-path
+      uses: expo/actions/fingerprint-query-artifact@main
       with:
         fingerprint-state-file: ${{ inputs.fingerprint-state-file }}
         platform: ${{ inputs.platform }}
@@ -31,7 +31,7 @@ runs:
     - name: Repack app
       id: repack
       if: steps.download-artifact.outputs.download-path != ''
-      uses: expo/actions/repack-app@kudo/fix-repack-path
+      uses: expo/actions/repack-app@main
       with:
         platform: ${{ inputs.platform }}
         source-app: ${{ steps.download-artifact.outputs.download-path }}
@@ -58,7 +58,7 @@ runs:
     - name: Update fingerprint database
       id: update-fingerprint
       if: steps.upload-artifact.outputs.artifact-id != ''
-      uses: expo/actions/fingerprint-update-artifact@kudo/fix-repack-path
+      uses: expo/actions/fingerprint-update-artifact@main
       with:
         fingerprint-state-file: ${{ inputs.fingerprint-state-file }}
         platform: ${{ inputs.platform }}
