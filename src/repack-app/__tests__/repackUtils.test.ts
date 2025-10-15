@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { fs, vol } from 'memfs';
 import path from 'node:path';
 
-import { determineSourceAppPathAsync } from '../repackUtils';
+import { determineSourceAppPathAsync, pathExistsAsync } from '../repackUtils';
 
 mock.module('node:fs', () => ({ default: fs }));
 mock.module('node:fs/promises', () => ({ default: fs.promises }));
@@ -34,6 +34,19 @@ describe('determineSourceAppPathAsync', () => {
 
     const result = await determineSourceAppPathAsync(apkPath);
     expect(result).toBe(apkPath);
+  });
+
+  it('should rename to .app when given directory is an iOS app directory', async () => {
+    vol.fromJSON({
+      [`${tempDir}/Info.plist`]: '',
+      [`${tempDir}/Frameworks/hermesvm.framework/hermesvm`]: '',
+      [`${tempDir}/Frameworks/hermesvm.framework/Info.plist`]: '',
+    });
+    const expectedPath = '/tmp/test.app';
+    const result = await determineSourceAppPathAsync(tempDir);
+    expect(result).toBe(expectedPath);
+    expect(fs.existsSync(expectedPath)).toBe(true);
+    expect(fs.existsSync(path.join(expectedPath, 'Info.plist'))).toBe(true);
   });
 
   it('should find apk file in directory', async () => {
@@ -91,5 +104,28 @@ describe('determineSourceAppPathAsync', () => {
 
     const result = await determineSourceAppPathAsync(tempDir);
     expect(result).toBe(apkPath);
+  });
+});
+
+describe(pathExistsAsync, () => {
+  afterEach(() => {
+    vol.reset();
+  });
+
+  it('should return false when nothing exists', async () => {
+    expect(await pathExistsAsync('/app')).toBe(false);
+    expect(await pathExistsAsync('/app/Info.plist')).toBe(false);
+  });
+
+  it('should return true when dir exists', async () => {
+    vol.mkdirSync('/app', { recursive: true });
+    expect(await pathExistsAsync('/app')).toBe(true);
+  });
+
+  it('should return true when file exists', async () => {
+    vol.fromJSON({
+      '/app/Info.plist': '',
+    });
+    expect(await pathExistsAsync('/app/Info.plist')).toBe(true);
   });
 });

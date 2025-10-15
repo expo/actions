@@ -19,6 +19,19 @@ export async function determineSourceAppPathAsync(sourceApp: string): Promise<st
     return sourceAppPath;
   }
 
+  const isAppDirectory = (
+    await Promise.all([
+      pathExistsAsync(path.join(sourceAppPath, 'Info.plist')),
+      pathExistsAsync(path.join(sourceAppPath, 'Frameworks')),
+    ])
+  ).every((exists) => exists);
+  if (isAppDirectory) {
+    const baseName = path.basename(sourceAppPath);
+    const targetPath = path.join(path.dirname(sourceAppPath), `${baseName}.app`);
+    await fs.promises.rename(sourceAppPath, targetPath);
+    return targetPath;
+  }
+
   const candidates = await glob('*.{apk,aab,ipa}', { cwd: sourceAppPath, absolute: true });
   if (candidates.length === 0) {
     throw new Error(`No app files found in the directory: ${sourceApp}`);
@@ -27,4 +40,13 @@ export async function determineSourceAppPathAsync(sourceApp: string): Promise<st
     throw new Error(`Multiple app files found in the directory: ${sourceApp}`);
   }
   return candidates[0];
+}
+
+export async function pathExistsAsync(path: string): Promise<boolean> {
+  try {
+    await fs.promises.stat(path);
+    return true;
+  } catch {
+    return false;
+  }
 }
