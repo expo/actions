@@ -1,4 +1,4 @@
-import { getInput, setOutput } from '@actions/core';
+import { getInput, info, setOutput } from '@actions/core';
 
 import { executeAction } from '../actions';
 import { createFingerprintDbManagerAsync, loadFingerprintStateAsync } from '../fingerprint';
@@ -21,6 +21,9 @@ async function runAction() {
   const githubArtifact = await dbManager.getFirstGitHubArtifactAsync(
     currentFingerprint.hash,
     platform
+  );
+  info(
+    `Querying artifact - platform[${platform}] hash[${currentFingerprint.hash}] isEmptyDiff[${diff.length === 0}] githubArtifact[${githubArtifact?.artifactUrl ?? ''}]`
   );
 
   if (githubArtifact && diff.length === 0) {
