@@ -32,7 +32,7 @@ export async function determineSourceAppPathAsync(sourceApp: string): Promise<st
     return targetPath;
   }
 
-  const candidates = await glob('*.{apk,aab,ipa}', { cwd: sourceAppPath, absolute: true });
+  const candidates = await glob('**/*.{apk,aab,ipa}', { cwd: sourceAppPath, absolute: true });
   if (candidates.length === 0) {
     throw new Error(`No app files found in the directory: ${sourceApp}`);
   }
